@@ -1,4 +1,4 @@
-# YouTube Video Downloader
+# YouTube Video Downloader (Individual Downloads + Playlist Downloads)
 These two Python scripts allow you to download videos and audio from YouTube using the yt-dlp library. Using 'ytdl', you can choose to download either video, audio, or both from a list of YouTube video links. You can also download whole playlists using the script 'ytdl-pl'.
 
 ## Prerequisite :

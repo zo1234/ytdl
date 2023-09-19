@@ -17,6 +17,7 @@ pip install yt-dlp
 
 ## DISCLAIMER
 **USE THIS SCRIPT RESPONSIBLY AND LEGALLY**
+
 The Python scripts provided here is intended for educational and informational purposes only. By using them, you acknowledge and agree to the following:
 1. **Respect Copyright Laws:** Downloading videos from online platforms, such as YouTube, may potentially infringe on copyright laws and the terms of service of those platforms. Ensure that you have the necessary permissions or rights to download and use the content you access through this script.
 2. **Responsibility for Usage:** You, the user, are solely responsible for any legal consequences that may arise from its usage. The scripts' creator and anyone associated with it shall not be held liable for any misuse or illegal activities carried out with these scripts.

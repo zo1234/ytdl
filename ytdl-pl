@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+
+import os
+import yt_dlp
+import re
+import shutil
+import logging
+
+# Define constants
+MAX_FILENAME_LENGTH = 200
+AUDIO_FORMAT_OPTIONS = 'bestaudio'
+VIDEO_FORMAT_OPTIONS = 'bestvideo+bestaudio'
+
+def is_valid_url(url):
+    # Use a regular expression to check if the input is a valid YouTube playlist URL
+    url_pattern = re.compile(r'https?://(?:www\.)?youtube\.com/playlist\?list=[\w-]+')
+    return url_pattern.match(url)
+
+def clean_filename(filename):
+    # Replace invalid characters with underscores and truncate if necessary
+    invalid_chars = r'[\/:*?"<>|]'
+    filename = re.sub(invalid_chars, '_', filename)
+    # Truncate to a reasonable length
+    filename = filename[:MAX_FILENAME_LENGTH]
+    return filename
+
+def get_valid_destination():
+    while True:
+        destination = input("Enter destination directory (Press Enter for Desktop): ").strip() or os.path.expanduser("~/Desktop")
+
+        os.makedirs(destination, exist_ok=True)
+
+        if not os.access(destination, os.W_OK):
+            print("Error: You don't have permission to write to the specified directory.")
+            continue
+
+        return destination
+
+def download_playlist_info(playlist_url):
+    ydl_opts = {
+        'quiet': True,
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            info = ydl.extract_info(playlist_url, download=False)
+            return clean_filename(info['title'])
+        except yt_dlp.DownloadError as e:
+            logging.error(f"An error occurred while fetching playlist info for {playlist_url}: {e}")
+            return None
+
+def download_playlist(playlist_url, destination, media_type):
+    ydl_opts = {
+        'format': AUDIO_FORMAT_OPTIONS if media_type == 'a' else VIDEO_FORMAT_OPTIONS,
+        'outtmpl': os.path.join(destination, '%(title)s.%(ext)s'),
+    }
+    if media_type == 'v':
+        ydl_opts['format'] += '/best[height<=1080]+best[height<=720]/best'
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            print(f"Fetching links for {playlist_url}")
+            ydl.download([playlist_url])
+        except yt_dlp.DownloadError as e:
+            logging.error(f"An error occurred while downloading {playlist_url}: {e}")
+
+def main():
+    logging.basicConfig(filename='playlist_downloader.log', level=logging.ERROR)
+    print("Welcome to YouTube Playlist Downloader!")
+
+    playlists_input = input("Enter YouTube playlist URLs (separated by space): ").strip().split()
+
+    destination = get_valid_destination()
+
+    while True:
+        media_type = input("Choose media type (v for video, a for audio, b for both): ").strip().lower()
+
+        if media_type in ('a', 'v', 'b'):
+            break
+        else:
+            print("Please choose 'a' for audio, 'v' for video, or 'b' for both.")
+
+    print("\n\nThank you. Now leave the rest to us.\n\nFetching links. Please be patient.\n\nNote : There might be long pauses between downloading two playlists. Don't worry, it's normal\n\n")
+
+    for playlist_url in playlists_input:
+        playlist_title = download_playlist_info(playlist_url)
+
+        if not playlist_title:
+            continue
+
+        playlist_folder = os.path.join(destination, playlist_title)
+        os.makedirs(playlist_folder, exist_ok=True)
+
+        if media_type == 'b':
+            audio_destination = os.path.join(playlist_folder, 'audio')
+            video_destination = os.path.join(playlist_folder, 'video')
+            os.makedirs(audio_destination, exist_ok=True)
+            os.makedirs(video_destination, exist_ok=True)
+            download_playlist(playlist_url, audio_destination, 'a')
+            download_playlist(playlist_url, video_destination, 'v')
+        else:
+            download_playlist(playlist_url, playlist_folder, media_type)
+
+    print("\nALL DONE!\n")
+
+if __name__ == "__main__":
+    main()
+    
+    
